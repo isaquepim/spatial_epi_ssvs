@@ -35,8 +35,8 @@ lipPriors <- nimbleCode({
   
   b0 ~ dnorm(0,1)
   b1 ~ dnorm(0,1)
-  sigma ~ dinvgamma(0.001, 0.001)
-  tau ~ dgamma(0.001, 0.001)
+  sigma ~ dinvgamma(10, 1)
+  tau ~ dgamma(1, 1)
   
 })
 
@@ -45,8 +45,8 @@ lipCode <- nimbleCode({
   # priors
   b0 ~ dnorm(0,1)
   b1 ~ dnorm(0,1)
-  sigma ~ dinvgamma(0.001, 0.001)
-  tau ~ dgamma(0.001, 0.001)
+  sigma ~ dinvgamma(10, 1)
+  tau ~ dgamma(1, 1)
   
   
   s[1:N] ~ dcar_normal(adj[1:L], w[1:L], num[1:N], tau, zero_mean = 1)
