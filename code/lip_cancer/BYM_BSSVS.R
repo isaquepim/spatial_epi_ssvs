@@ -33,6 +33,18 @@ non.zero.adj <- as.carAdjacency(non.zero)
 LipAdj <- as.carAdjacency(LipAdj)
 
 
+lipPriors <- nimbleCode({
+  
+  b0 ~ dnorm(0,1)
+  b1 ~ dnorm(0,1)
+  sigma ~ dinvgamma(10, 1)
+  tau ~ dgamma(1, 1)
+  z0 ~ dbern(.5)
+  z1 ~ dbern(.5)
+  
+  
+})
+
 
 
 lipCode <- nimbleCode({
@@ -40,23 +52,15 @@ lipCode <- nimbleCode({
   # priors
   b0 ~ dnorm(0,1)
   b1 ~ dnorm(0,1)
-  sigma ~ dgamma(1, 1)
+  sigma ~ dinvgamma(10, 1)
   tau ~ dgamma(1, 1)
-  
-  psi ~ dunif(0,1)
-  z0 ~ dbern(psi)
-  z1 ~ dbern(psi)
+  z0 ~ dbern(.5)
+  z1 ~ dbern(.5)
   
   zb0 <- b0*z0
   zb1 <- b1*z1
   
   # stand-alone priors for comparison
-  p_b0 ~ dnorm(0,1)
-  p_b1 ~ dnorm(0,1)
-  p_sigma ~ dgamma(1, 1)
-  p_tau ~ dgamma(1, 1)
-  p_psi ~ dunif(0,1)
-  
   
   s[1:N] ~ dcar_normal(adj[1:L], w[1:L], num[1:N], tau, zero_mean = 1)
   
@@ -78,53 +82,31 @@ lipConsts <- list(N = length(d$cases), L = length(LipAdj$adj),
 lipData <- list(y = d$cases,        aff = d$AFF,
                 e = d$expected)
 
-lipInits <- list(b0 = 0, b1 = 0, tau = 1, sigma = 1)
+lipInits <- list(b0 = 0, b1 = 0, tau = 1, sigma = 1, z0 = 1, z1 = 1)
 
 
 lipModel <- nimbleModel(code = lipCode, name = "lip", constants = lipConsts,
                         data = lipData, inits = lipInits)
 
+lipPriorModel <- nimbleModel(code = lipPriors, name = "priors", constants = lipConsts,
+                             data = lipData, inits = lipInits)
 
 ###### Compiling the model and MCMC ######
+
+monitors <- c("b0","b1","tau",
+              "sigma","z0","z1")
 mcmc.out <- nimbleMCMC(code = lipCode, constants = lipConsts,
                        data = lipData, inits = lipInits,
                        nchains = 2, niter = 10000, summary = TRUE,
-                       WAIC = TRUE, monitors = c("b0","b1","tau",
-                                                 "sigma","p_b0","p_b1",
-                                                 "p_tau","p_sigma","z0",
-                                                 "z1","psi","p_psi"))
+                       WAIC = TRUE, monitors = monitors, nburnin = 1000)
+mcmc.prior <- nimbleMCMC(code = lipPriorModel, constants = lipConsts,
+                         data = lipData, inits = lipInits,
+                         nchains = 2, niter = 10000, summary = TRUE,
+                         monitors = monitors, nburnin = 1000)
 
 mcmc.out$summary
 
-priorXposterior <- function(prior, posterior, chainn, niter=10000){
-  df_beta <-  cbind(chainn[,posterior], rep(posterior,niter))
-  df_pbeta <- cbind(chainn[, prior]   , rep(prior,niter))
-  df_beta <-  rbind(df_beta,df_pbeta)
-  
-  df <- data.frame(chain = as.numeric(df_beta[,1]), beta = df_beta[,2])
-  
-  p <- ggplot(data = df, aes(x = chain, fill = beta, colour = beta))+
-    geom_density(alpha = 0.4)+
-    scale_x_continuous(expression(tau), 
-                       expand = c(0,0))+
-    scale_y_continuous(expand = c(0,0))+
-    theme_bw(base_size = 20)
-  
-  return(p)
-}
 
+pp.plot(prior.samples = mcmc.prior$samples,
+        posterior.samples = mcmc.out$samples)
 
-priorXposterior("p_tau","tau",mcmc.out$samples$chain1)
-priorXposterior("p_sigma","sigma",mcmc.out$samples$chain1)
-priorXposterior("p_b0","b0",mcmc.out$samples$chain1)
-priorXposterior("p_b1","b1",mcmc.out$samples$chain1)
-
-table(mcmc.out$samples$chain1[,"z0"])
-table(mcmc.out$samples$chain1[,"z1"])
-
-
-
-tau <- 1
-g <- 0.01
-rcar_proper(n=1,mu = rep(0,53), adj = non.zero.adj$adj, num = non.zero.adj$num,
-            tau = tau, gamma = g)
