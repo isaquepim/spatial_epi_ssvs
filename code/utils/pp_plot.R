@@ -15,10 +15,13 @@ pp.plot <- function(prior.samples, posterior.samples){
   N <- length(prior.samples)
   nomes <- colnames(prior)
   
-  for(i in 2:N){
-    prior <- rbind(prior, prior.samples[[i]])
-    posterior <- rbind(posterior, posterior.samples[[i]])
+  if(N >1){
+    for(i in 2:N){
+      prior <- rbind(prior, prior.samples[[i]])
+      posterior <- rbind(posterior, posterior.samples[[i]])
+    }
   }
+  
   
   #df <- data.frame(prior = prior, posterior = posterior)
   len <- length(prior[,1])

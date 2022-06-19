@@ -10,7 +10,7 @@ library(ggplot2)
 ####SIMULATION####
 ##################
 simulation <- function(n.regions, n.coef, cov.mat,
-                    mu.beta = 0, sd.beta = 5,
+                    mu.beta = 0, sd.beta = 1,
                     adj.mat, tau, g, sd,b0, boolCAR = FALSE){
   
   X <- mvrnorm(n.regions, mu = rep(0,n.coef), Sigma = cov.mat)
@@ -168,21 +168,4 @@ mcmc.out4 <- nimbleMCMC(code = CodeNoCAR, constants = Consts,
                         nchains = 3, niter = 10000, summary = TRUE,
                         WAIC = TRUE, nburnin = 5000)
 
-
-priorXposterior <- function(prior, posterior, chainn, niter=10000){
-  df_beta <-  cbind(chainn[,posterior], rep(posterior,niter))
-  df_pbeta <- cbind(chainn[, prior]   , rep(prior,niter))
-  df_beta <-  rbind(df_beta,df_pbeta)
-  
-  df <- data.frame(chain = as.numeric(df_beta[,1]), beta = df_beta[,2])
-  
-  p <- ggplot(data = df, aes(x = chain, fill = beta, colour = beta))+
-    geom_density(alpha = 0.4)+
-    scale_x_continuous(expression(tau), 
-                       expand = c(0,0))+
-    scale_y_continuous(expand = c(0,0))+
-    theme_bw(base_size = 20)
-  
-  return(p)
-}
 

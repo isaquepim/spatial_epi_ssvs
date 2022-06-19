@@ -1,5 +1,6 @@
 library(nimble)
 library(SpatialEpi)
+library(ggplot2)
 
 ###### loading data ######
 
@@ -12,14 +13,7 @@ d <- scotland$data
 lipPriors <- nimbleCode({
   
   b0 ~ dnorm(0,1)
-  b1 ~ dnorm(0,1)
-  
-})
-
-lipCode <- nimbleCode({
-  
-  b0 ~ dnorm(0,1)
-  b1 ~ dnorm(0,1)
+  b1 ~ dnorm(5,1)
   
   for (i in 1:N){
     
@@ -28,20 +22,32 @@ lipCode <- nimbleCode({
     
   }
   
+})
 
+lipCode <- nimbleCode({
   
+  b0 ~ dnorm(0,1)
+  b1 ~ dnorm(5,1)
+  
+  for (i in 1:N){
+    
+    log(theta[i]) <- b0 + b1*aff[i]
+    y[i] ~ dpois(e[i]*theta[i])
+    
+  }
 })
 
 lipConsts <- list(N = length(d$cases))
 lipData <- list(y = d$cases, aff = d$AFF, e = d$expected)
 lipInits <- list(b0 = 0, b1 = 0)
+lipPriorData <- list(aff = d$AFF, e = d$expected)
 
 
 lipModel <- nimbleModel(code = lipCode, name = "lip", constants = lipConsts,
                     data = lipData, inits = lipInits)
 
 lipPriorModel <- nimbleModel(code = lipPriors, name = "priors", constants = lipConsts,
-                             data = lipData, inits = lipInits)
+                             data = lipPriorData, inits = lipInits)
 
 
 ###### testing ######
@@ -56,22 +62,70 @@ set.seed(123)
 
 monitors <- c("b0","b1")
 
-mcmc.out <- nimbleMCMC(code = lipCode, constants = lipConsts,
-                       data = lipData, inits = lipInits,
-                       nchains = 2, niter = 10000, summary = TRUE,
-                       WAIC = TRUE, monitors = monitors,
-                       nburnin = 1000)
 
-mcmc.prior <- nimbleMCMC(code = lipPriorModel, constants = lipConsts,
-                         data = lipData, inits = lipInits,
-                         nchains = 2, niter = 10000, summary = TRUE,
-                         monitors = monitors, nburnin = 1000)
+cmodel  <- compileNimble(lipModel)
+mcmc    <- buildMCMC(lipModel, monitors = monitors)
+cmcmc   <- compileNimble(mcmc, project = lipModel)
+samples <- runMCMC(cmcmc, niter = 1000, nburnin = 500)
 
-names(mcmc.out)
-mcmc.out$summary
-mcmc.out$WAIC
 
-mcmc.prior$summary
+prior.cmodel  <- compileNimble(lipPriorModel)
+prior.mcmc    <- buildMCMC(lipPriorModel, monitors = monitors)
+prior.cmcmc   <- compileNimble(prior.mcmc, project = lipPriorModel)
+prior.samples <- runMCMC(prior.cmcmc, niter = 1000, nburnin = 500)
 
-pp.plot(prior.samples = mcmc.prior$samples,
-        posterior.samples = mcmc.out$samples)
+
+
+pp.plot(prior.samples = list(prior.samples),
+        posterior.samples = list(samples))
+
+
+########################
+######SPATIAL PLOT######
+########################
+
+
+d$SIR <- d$cases/d$expected
+n <- length(d$cases)
+
+y_posterior <- predictive_check(monitors = monitors,
+                                nSamp = nrow(samples),
+                                n = length(d$cases),
+                                cmodel = cmodel,
+                                samples = samples)
+
+y_prior <- predictive_check(monitors = monitors,
+                            nSamp = nrow(prior.samples),
+                            n = length(d$cases),
+                            cmodel = prior.cmodel,
+                            samples = prior.samples)
+
+
+q05 <- function(x){quantile(x,0.05)}
+q95 <- function(x){quantile(x,0.95)}
+
+d$prior.mean <- colMeans(y_prior)/d$expected
+d$prior.lower <- apply(y_prior,2,q05)/d$expected
+d$prior.upper <- apply(y_prior,2,q95)/d$expected
+
+d$posterior.mean <- colMeans(y_posterior)/d$expected
+d$posterior.lower <- apply(y_posterior,2,q05)/d$expected
+d$posterior.upper <- apply(y_posterior,2,q95)/d$expected
+
+
+map <- scotland$spatial.polygon
+proj4string(map) <- "+proj=tmerc +lat_0=49 +lon_0=-2
++k=0.9996012717 +x_0=400000 +y_0=-100000 +datum=OSGB36
++units=km +no_defs"
+
+map <- spTransform(map,
+                   CRS("+proj=longlat +datum=WGS84 +no_defs"))
+
+#shapefile to polygon dataframe
+rownames(d) <- d$county
+map <- SpatialPolygonsDataFrame(map, d, match.ID = TRUE)
+map <- st_as_sf(map)
+
+plot_cart(map = map,limits = c(0,7))
+
+
