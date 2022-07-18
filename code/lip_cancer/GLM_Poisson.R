@@ -1,12 +1,18 @@
 library(nimble)
 library(SpatialEpi)
+
 library(ggplot2)
+library(ggthemes)
+library(RColorBrewer)
+
+library(sf)
 
 ###### loading data ######
 
 data(scotland)
 
 d <- scotland$data
+d$SIR <- d$cases/d$expected*100
 
 ###### setting up the model ######
 
@@ -118,10 +124,16 @@ proj4string(map) <- "+proj=tmerc +lat_0=49 +lon_0=-2
 +k=0.9996012717 +x_0=400000 +y_0=-100000 +datum=OSGB36
 +units=km +no_defs"
 
-map <- spTransform(map,
-                   CRS("+proj=longlat +datum=WGS84 +no_defs"))
+map <- spTransform(map, CRS("+proj=longlat +datum=WGS84 +no_defs"))
 
 #shapefile to polygon dataframe
+
+br <- c(0,1,2,3,4,5)*100
+br <- c(br, Inf)
+d$dSIR <- cut(d$SIR, breaks = br, dig.lab = 5,
+    include.lowest = TRUE)
+d$dAFF <- cut(d$AFF*100,c(0,1,2,3,4,5)*5, include.lowest = TRUE)
+
 rownames(d) <- d$county
 map <- SpatialPolygonsDataFrame(map, d, match.ID = TRUE)
 map <- st_as_sf(map)
@@ -129,3 +141,28 @@ map <- st_as_sf(map)
 plot_cart(map = map,limits = c(0,7))
 
 
+#EPSG:27700
+#OSGB 1936 / British National Grid --
+#United Kingdom Ordnance Survey
+mytheme <- theme(panel.grid.major = element_line(color = '#cccccc' 
+                                                  ,linetype = 'dashed'
+                                                  ,size = .3
+                 )
+                 ,panel.background = element_rect(fill = 'aliceblue')
+)
+
+lipMap <- ggplot()+
+  geom_sf(data = map, aes(fill = dSIR), color = NA)+
+  coord_sf(crs = 27700)+
+  #scale_fill_colorblind(name = "SIR (%)")+
+  scale_fill_brewer(palette = "Oranges", name = "SIR (%)")+
+  mytheme
+lipMap
+
+lipMap <- ggplot()+
+  geom_sf(data = map, aes(fill = dAFF), color = NA)+
+  coord_sf(crs = 27700)+
+  #scale_fill_colorblind(name = "SIR (%)")+
+  scale_fill_brewer(palette = "Oranges", name = "AFF (%)")+
+  mytheme
+lipMap

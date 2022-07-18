@@ -178,8 +178,7 @@ b0 <- 1
 
 err3 <- rnorm(n = n3, mean = 0, sd = err.sd3)
 
-theta3 <- X3 %*% beta3 + err3
-theta3 <- theta3 + b0
+theta3 <- b0 + X3 %*% beta3 + err3
 
 theta3 <- (theta3 - mean(theta3))/sd(theta3)*0.875 + 2.35
 
