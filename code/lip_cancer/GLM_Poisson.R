@@ -14,7 +14,14 @@ data(scotland)
 d <- scotland$data
 d$SIR <- d$cases/d$expected*100
 
+nb <- poly2nb(map)
+
+LipAdj <- nb2mat(nb, style = "B", zero.policy = TRUE)
+lw <- mat2listw(LipAdj)
 ###### setting up the model ######
+
+
+
 
 lipPriors <- nimbleCode({
   
@@ -43,7 +50,7 @@ lipCode <- nimbleCode({
   }
 })
 
-lipConsts <- list(N = length(d$cases))
+lipConsts <- list(N = length(d$cases)-3)
 lipData <- list(y = d$cases, aff = d$AFF, e = d$expected)
 lipInits <- list(b0 = 0, b1 = 0)
 lipPriorData <- list(aff = d$AFF, e = d$expected)
@@ -118,6 +125,13 @@ d$posterior.mean <- colMeans(y_posterior)/d$expected
 d$posterior.lower <- apply(y_posterior,2,q05)/d$expected
 d$posterior.upper <- apply(y_posterior,2,q95)/d$expected
 
+d$err <- colMeans(y_posterior) - d$cases
+
+moran.test(d$err,lw, alternative="two.sided", zero.policy = TRUE)
+
+
+
+summary(samples)
 
 map <- scotland$spatial.polygon
 proj4string(map) <- "+proj=tmerc +lat_0=49 +lon_0=-2
