@@ -1,0 +1,26 @@
+\setlength{\absparsep}{18pt} 
+\begin{resumo}[Resumo]
+
+O mapeamento de doenças tem um longo histórico em vigilância sanitária. Mapas provêm um resumo visual rápido da informação espacial, e permitem encontrar padrões que não apareceriam na forma tabular. Com o aumento da disponibilidade de dados georreferenciados, faz-se necessário o desenvolvimento de técnicas para a análise deste tipo de dados. Do ponto de vista epidemiológico, a modelagem dos padrões e estruturas de correlação, estimação dos parâmetros relevantes para o problema e a comparação de diferentes cenários e a predição para regiões sem observações são essenciais para compreensão do cenário e melhor alocação de recursos para reduzir os impactos de um possível surto.
+
+Neste trabalho, utilizo técnicas modernas, na forma de modelos hierárquicos Bayesianos, para estudar a distribuição do risco para uma doença e análise dos fatores relevantes para a propagação desta doença. O uso de modelos hierárquicos permite de forma robusta e flexível introduzir informações de covariáveis para o modelo, acomodar correlação espacial além de prover uma noção formal da incerteza associada às estimativas de risco. Em especial, consegue conciliar esquemas de seleção de variáveis junto com a estimação dos parâmetros de interesse do modelo.
+
+No \autoref{chap:modelagem} reviso as duas principais técnicas utilizadas ao longo do texto: modelos condicionais autorregressivos (CAR) e seleção bayesiana de variáveis por busca estocástica (BSSVS). Modelos CAR são responsáveis por acomodar estrutura espacial dentro do modelo, enquanto a seleção de variáveis é feita por um esquema de busca estocástica acoplada ao modelo hierárquico. No \autoref{chap:lip}, aplico os métodos desenvolvidos para o caso de câncer labial na Escócia, comparando diferentes modelos e produzindo mapas de risco e quantidades de interesse. No \autoref{chap:ebola}, aplico os métodos desenvolvidos para a epidemia de Ebola na África Ocidental que ocorreu nos anos de 2013-2016. Os dados do Ebola foram enriquecidos com informações filogenéticas como variáveis explanatórias. Os resultados são utilizados para produzir mapas de risco e realizar a predição de áreas sem observações
+
+ Palavras-chave: mapeamento de doenças, modelos hierárquicos bayesianos, seleção de variáveis 
+\end{resumo}
+
+\begin{resumo}[Abstract]
+ \begin{otherlanguage*}{english}
+  Disease mapping has a long history in health surveillance. Maps provide a quick summary of spatial information that otherwise would not pop up in a tabular format. With the increasing quantity of georeferenced data, it is necessary to develop methods and techniques to analyze such data. From an epidemiological point of view, modeling patterns and correlation structures, estimation of the relevant parameters, comparison of different scenarios and prediction of missing data are essential to understand the situation and better allocate resources, reducing damage from a possible disease outbreak.
+  
+
+  In this text, I make use of modern methods in the form of Bayesian hierarchical models to study disease burden and analyze the risk factors that are relevant to the spreading of a disease. Hierarchical modeling allows for the introduction of covariate information and adjustment for spatial correlation in a robust and flexible manner. Moreover, it provides a formal notion of uncertainty associated with the risk estimates and allows variable selection schemes along with parameter estimation.
+
+  
+
+  In \autoref{chap:modelagem} I go over the two main methods used in the text: conditional autoregressive (CAR) models and Bayesian Stochastic Search Variable Selection (BSSVS). CAR models are responsible for accommodating spatial information contained in data, and variable selection is done by a stochastic search scheme attached as part of the hierarchical model. In \autoref{chap:lip}, I apply those methods to model the Scottish Lip Cancer case, making comparisons of different modeling options and producing risk maps and quantities of interest. In \autoref{chap:lip}, I apply those methods to model the 2013-2016 West African Ebola epidemic. The data was augmented with phylogenetic information as covariates. The results are then used to produce risk maps and prediction of missing case counts.
+ \end{otherlanguage*}
+
+ Keywords: disease mapping, hierarchical modelling, variable selection
+\end{resumo}

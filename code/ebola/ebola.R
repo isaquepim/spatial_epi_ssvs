@@ -23,8 +23,8 @@ W <- nb2mat(nb.ebola, style = "B", zero.policy = TRUE)
 EbolaAdj <- as.carAdjacency(W)
 
 ggplot()+
-  geom_sf(data = ebola, aes(fill = include))+
-  scale_fill_manual(values=c(OUT = "#74736E", IN = "#FAAC5A"))+
+  geom_sf(data = ebola_IN, aes(fill = log(counts)))+
+  scale_fill_gradient(low = "#FEEDDE", high = "#A63603", name = "logCasos")+
   labs(fill="Incluir")+
   theme_void()
 

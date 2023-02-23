@@ -1,0 +1,153 @@
+\chapter{Gaussian Markov Random Fields}\label{ap: IGMRF}
+
+\textit{Gaussian Markov Random Fields} (GMRF's) são objetos simples: vetores aleatórios (de dimensão finita) seguindo uma distribuição normal multivariada. Apesar disso, nosso interesse está em versões mais restritas das GMRF's, que satisfazem certas condições de independência (daí o cunho \textit{Markov}).
+
+\begin{definition}
+\label{def:GMRF}
+Seja $\x = (x_1, \dots, x_n)^T$ um vetor aleatório com distribuição normal de média $\mathbf{\mu}$ e matriz de covariância $\mathbf{\Sigma}$. Defina o grafo $G = (V,E)$, onde $V=\{1,\dots, n\}$, tal que não há aresta conectando dois nós $i$ e $j$ se, e somente se, $x_i \perp x_j|\x_{-ij}$. Dizemos que $\x$ é um GMRF com respeito ao grafo $G$.
+\end{definition}
+
+A matriz de precisão da normal multivariada explicita algumas características de independência condicional. Em especial, temos o teorema abaixo:
+
+\begin{theorem}
+\label{thm: nullQ}
+Seja $\x$ um vetor com distribuição normal de média $\mathbf{\mu}$ e matriz de precisão $Q \succ 0$. Então, para $i \neq j$,
+\begin{equation}
+    x_i \perp x_j|\x_{-ij} \iff Q_{ij} = 0.
+\end{equation}
+\end{theorem}
+
+\textit{Prova.} Para isso, particionamos o vetor $\x = (x_i, x_j, \x_{-ij})$ e utilizamos do critério da fatorização. Sem perda de generalidade, assuma $\mathbf{\mu} = 0$. A densidade conjunta de $\x$ pode ser expressa como:
+
+\begin{flalign}
+    \pi(\x) = \pi(x_i, x_j, \x_{-ij}) & \propto \exp (-\frac{1}{2}\x^T Q \x) \\ \nonumber
+    & \propto \exp \left(-\frac{1}{2} \sum_{k,l} x_kQ_{k,l}x_l\right) \\ \nonumber
+    & \propto \exp \left(\underbrace{-\frac{1}{2}x_ix_j(Q_{ij}+Q_{ji})}_{\text{Termo 1}} \underbrace{-\frac{1}{2} \sum_{\{k,l\} \neq \{i,j\}} x_kQ_{kl}x_l}_{\text{Termo 2}}\right).
+\end{flalign}
+
+Veja que o Termo 2 não envolve o produto $x_ix_j$, enquanto o Termo 1 envolve $x_ix_j$ se, e somente se, $Q_{ij} \neq 0$. Então, se vale que $Q_{ij} = 0$, é possível fatorar $\pi(\x)$ como:
+\begin{equation}
+    \pi(x_i, x_j, \x_{-ij}) = f(x_i,\x_{-ij})g(x_j,\x_{-ij}).
+\end{equation}
+
+Pelo critério de fatorização, $x_i$ e $x_j$ são independentes se, e somente se, $Q_{ij} = 0$ $\qed$
+
+Faz sentido então caracterizar os GMRF's através de sua matriz de precisão. Considere então a seguinte reformulação de \ref{def:GMRF}:
+
+\begin{definition}
+Um vetor aleatório $\x = (x_1,\dots, x_n) \in \mathbb{R}^n$ é um GMRF com respeito ao grafo $G = (V,E)$ com média $\mathbf{\mu}$ e matriz de precisão $\mathbf{Q} \succ 0$ se, e somente se, sua densidade é da forma:
+
+\begin{equation}
+    \label{eq: GMRFdensity}
+    \pi(\x) = (2\pi)^{-n/2}|\mathbf{Q}|^{1/2} \exp(-\frac{1}{2}\left(\x-\mu)^T\mathbf{Q}(\x-\mu)\right),
+\end{equation}
+e
+\[Q_{ij} \neq 0 \iff \{i,j\} \in E \quad \forall i \neq j.\]
+
+\end{definition}
+
+Uma forma alternativa de caracterizar um GMRF é através das condicionais completas. Essa abordagem foi desenvolvida por Besag e os modelos são abreviados como CAR (\textit{conditional autoregressions}). Então suponha que para o vetor de dados $\textbf{x} = (x_1, \dots, x_n)$ especificamos as condicionais completas como normais de parâmetros:
+
+\begin{flalign}
+\label{def:fullconditionals}
+        \ev(x_i|\x_{-i}) &= \mu_i - \sum_{j:j \sim i} \beta_{ij}(x_j - \mu_j),\\
+            \var(x_i|\x_{-i}) &= \frac{1}{\kappa_i} > 0.
+\end{flalign}
+
+Aqui, $\sim$ [e uma relação de simetria definida implicitamente pelos termos não-nulos de $\boldsymbol{\beta}$. Essas condicionais completas devem ser consistentes de modo a gerar a densidade conjunta $\pi(\x)$. De fato, veja que se escolhermos as entradas da matriz de precisão como:
+\[Q_{ii} = \kappa_i \quad \text{and} \quad Q_{ij} = \kappa_i\beta_{ij}\]
+com a condição de Q simétrica, ou seja,
+\[\kappa_i\beta_{ij} = \kappa_j\beta_{ji}\]
+temos um candidato a densidade conjunta. Este candidato a densidade é único, e para mostrar isso precisamos do seguinte lema.
+
+\begin{lemma}[Lema de Brook]
+\label{lema:brook}
+
+Seja $\pi(\x)$ a densidade de $\x \in \R^n$ e defina o suporte dessa densidade como o conjunto $\Omega = \{\x \in \R^n: \pi(\x) > 0\}$. Se $\x,\x' \in \Omega$, então:
+
+\begin{flalign}
+\label{eq:brook}
+        \frac{\pi(\x)}{\pi(\x')} &= \prod_{i=1}^n \frac{\pi(x_i|x_1,\dots,x_{i-1},x'_{i+1}, \dots,x'_{n})}{\pi(x'_i|x_1,\dots,x_{i-1},x'_{i+1}, \dots,x'_{n})} \\
+\label{eq:brook2}
+         &= \prod_{i=1}^n \frac{\pi(x_i|x'_1,\dots,x'_{i-1},x_{i+1}, \dots,x_{n})}{\pi(x'_i|x'_1,\dots,x'_{i-1},x_{i+1}, \dots,x_{n}}
+\end{flalign}
+\end{lemma}
+
+\textit{Demostração.} Como estamos dentro do suporte da distribuição, podemos usar as definições de densidade condicional para obter a seguinte relação:
+
+\[\frac{\pi(x_n|x_1,\dots,x_{n-1})\pi(x_1,\dots,x_{n-1})}{\pi(x'_n|x_1,\dots,x_{n-1})\pi(x_1,\dots,x_{n-1})} = \frac{\pi(x_1,\dots,x_{n})}{\pi(x_1,\dots,x'_{n})}\]
+
+que nos permite expressar a densidade conjunta como:
+\[\pi(x_1,\dots,x_{n}) = \frac{\pi(x_n|x_1,\dots,x_{n-1})}{\pi(x'_n|x_1,\dots,x_{n-1})} \cdot
+\pi(x_1,\dots,x_{n-1}, x'_n).\]
+Podemos da mesma forma expressar o último termo da equação acima como 
+\[\pi(x_1,\dots,x_{n-1}, x'_n) = \frac{\pi(x_{n-1}|x_1,\dots,x_{n-2},x'_n)}{\pi(x'_{n-1}|x_1,\dots,x_{n-2},x'_n)} \cdot
+\pi(x_1,\dots,x_{n-2},x'_{n-1}, x'_n).\]
+Substituindo na densidade conjunta
+\[\pi(x_1,\dots,x_{n}) = \frac{\pi(x_n|x_1,\dots,x_{n-1})}{\pi(x'_n|x_1,\dots,x_{n-1})} \cdot \frac{\pi(x_{n-1}|x_1,\dots,x_{n-2},x'_n)}{\pi(x'_{n-1}|x_1,\dots,x_{n-2},x'_n)} \cdot
+\pi(x_1,\dots,x_{n-2},x'_{n-1}, x'_n).\]
+Basta então repetir o procedimento até o termo à direita se tornar a densidade conjunta de $\x' \qed$.
+
+Com isso, se fixarmos $\x'$, obtemos a densidade de $\x$ a menos de uma constante de proporcionalidade. 
+
+\begin{theorem}
+Dadas as n condicionais completas como em \ref{def:fullconditionals}, então $\x$ é um GMRF com média $\mu$ e matriz de precisão $Q = (Q_{ij})$, onde
+\[Q_{ij} = \left\{\begin{split}
+\kappa_i\beta_{ij} \quad i \neq j \\
+ \kappa_i \quad i = j\\ 
+\end{split}\right.\]
+com $\kappa_i\beta_{ij} = \kappa_j\beta_{ij}$ e $Q \succ 0$.
+
+\end{theorem}
+
+\textit{Demonstração.} Sem perda de generalidade, assuma $\mu = 0$ e  fixe $\x' = 0$ no Lema de Brook. Então o log de \ref{eq:brook} pode ser simplificado para:
+\begin{equation}
+    \log \frac{\pi(\x)}{\pi(0)} = -\frac{1}{2}\sum_{i=1}^{n}\kappa_ix_i^2 -\sum_{i=2}^n \sum_{j=1}^{i-1}\kappa_i\beta_{ij}x_ix_j,
+\end{equation}
+
+e \ref{eq:brook2} para
+\begin{equation}
+    \log \frac{\pi(\x)}{\pi(0)} = -\frac{1}{2}\sum_{i=1}^{n}\kappa_ix_i^2 -\sum_{i=1}^{n-1} \sum_{j=i+1}^{n}\kappa_i\beta_{ij}x_ix_j.
+\end{equation}
+Para isso, basta ver como cada termo do produtório se comporta
+
+\[\prod_{i=1}^n \frac{\pi(x_i|x'_1,\dots,x'_{i-1},x_{i+1}, \dots,x_{n})}{\pi(x'_i|x'_1,\dots,x'_{i-1},x_{i+1}, \dots,x_{n})} = \exp\left( -\frac{\kappa_i}{2}(x_i^2 -2x_i[\sum_{\substack{j:i\sim j \\ j < i}}\beta_{ij}x'_j + \sum_{\substack{j:i\sim j \\ j > i}}\beta_{ij}x_j])  \right).\]
+
+\[\prod_{i=1}^n \frac{\pi(x_i|x_1,\dots,x_{i-1},x'_{i+1}, \dots,x'_{n})}{\pi(x'_i|x_1,\dots,x_{i-1},x'_{i+1}, \dots,x'_{n})} = \exp\left( -\frac{\kappa_i}{2}(x_i^2 -2x_i[\sum_{\substack{j:i\sim j \\ j > i}}\beta_{ij}x'_j + \sum_{\substack{j:i\sim j \\ j < i}}\beta_{ij}x_j])  \right).\]
+
+Como ambas devem ser iguais, segue que $\kappa_i\beta_{ij} = \kappa_j\beta_{ij}$, para $i \neq j$. A densidade de $\x$ então pode ser expressa como
+\[\log \pi(\x) = \text{const} - \frac{1}{2}\sum_{i = 1}^n \kappa_ix_i^2 - \frac{1}{2}\sum_{i \neq j}\kappa_i\beta_{ij}x_ix_j. \quad \qed\]
+
+
+
+
+
+\chapter{Intrinsic Gaussian Markov Random Fields}
+
+Neste apêndice introduzo um tipo especial de GMRF chamadas de IGMRF, Campos Gaussianos Aleatórios de Markov Intrínsecos. Antes de começar a falar sobre IGMRF's, precisamos enunciar algumas definições de álgebra linear.
+
+Primeiramente, o \textit{núcleo} ou espaço nulo de uma matriz $\mathbf{A}$ é o conjunto de todos os vetores $\mathbf{x}$ tais que $\mathbf{Ax = 0}$. A \textit{nulidade} é a dimensão do núcleo. Para uma matriz $n \times m$ o \textit{posto} é definido como $\min (m,n) = k$, onde $k$ é a nulidade de $\mathbf{A}$. Para uma matriz singular, i.e, não inversível, com nulidade $k$, denotamos $|\mathbf{A}|^*$ o produto dos $n-k$ autovalores não nulos de $\mathbf{A}$. 
+
+Com isso, podemos definir o que é uma IGMRF de primeira ordem.
+
+\begin{definition}
+Seja $\mathbf{Q}$ uma matriz $n \times n$ semi-positiva definida com posto $n - k > 0$. Então $\mathbf{x} = (x_1, \dots, x_n)^T$ é uma GMRF imprópria de posto $n-k$ com parâmetros $(\mathbf{\mu}, \mathbf{Q})$, se sua densidade é
+\begin{equation}
+    \pi(\mathbf{x}) = (2\pi)^{\frac{-(n-k)}{2}}(|\mathbf{Q}|^* )^{1/2} \exp \left(  -\frac{1}{2} \mathbf{(x-\mu)^TQ^T(x-\mu)} \right).
+\end{equation}
+\end{definition}
+
+
+Uma GMRF intrinseca é uma GMRF imprópria de rank $n-1$, onde o vetor $\mathbf{1} = (1, \dots, 1)$ gera o espaço nulo de $\mathbf{Q}$. Ou seja, $\mathbf{Q1} = 0$. Já é possível ver que a densidade de uma IGMRF é invariante a adição de uma constante $c\mathbf{1 = c}$, basta olhar o núcleo da exponencial na densidade.
+
+
+
+\begin{equation*}
+\begin{split}
+        \mathbf{(x-\mu +c)^TQ^T(x-\mu+c)} &= \mathbf{(x-\mu)^TQ^T(x-\mu) + c^TQ^T(x-\mu)} \\
+                                         &+   \mathbf{(x-\mu)^TQ^Tc + c^TQ^Tc} \\
+                                        &= \mathbf{(x-\mu)Q^T(x-\mu)} 
+\end{split}
+\end{equation*}
+
+É importante notar isso para impor restrições para a IGMRF somar zero. Caso contrário, pode haver confusão com o intercepto.

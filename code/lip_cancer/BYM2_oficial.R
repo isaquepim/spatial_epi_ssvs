@@ -8,6 +8,7 @@ library(ggthemes)
 library(RColorBrewer)
 library(coda)
 library(sf)
+library(compareMCMCs)
 
 set.seed(123)
 ###### loading data ######
@@ -105,7 +106,7 @@ diag(Q) <- 0
 diag(Q) <- -rowSums(Q)
 # Scale intrinsic GMRF so that geometric mean of marginal variance is 1
 Q.scaled <- inla.scale.model(Q,constr=list(A=matrix(1,1,N.no_islands),e=0))
-scale <- exp((1/nrow(Q))*sum(log(1/diag(Q.scaled))))
+scale <- Q.scaled[1,1]/Q[1,1]
 
 #matrix to adjacency list
 LipAdj <- as.carAdjacency(W.no_islands)
@@ -156,7 +157,9 @@ BYM2Inits <- list(
 
 ###### Compiling and running the model ######
 
-
+BYM2Inits <- list(b0 =  0, b1 = 0, u.i = rnorm(N.islands,0,1), rho = 0.1,
+     s = rnorm(N.no_islands,0,1), tau.r = 1,
+     u = rnorm(N.no_islands,0,1))
 
 
 BYM2samples <- nimbleMCMC(code = BYM2Code,
@@ -166,10 +169,22 @@ BYM2samples <- nimbleMCMC(code = BYM2Code,
                              monitors = monitors,
                              niter = n.iter,
                              nburnin = n.burnin,
-                             nchains = n.chains, 
+                             #nchains = n.chains, 
                              samplesAsCodaMCMC = TRUE, 
                              summary = TRUE, 
                              WAIC = TRUE)
+
+comparr.model <- compareMCMCs(modelInfo = list(code = BYM2Code,
+                                                 constants = BYM2Consts,
+                                                 data = BYM2Data,
+                                                 inits = BYM2Inits),
+                                MCMCcontrol = list(niter = n.iter,
+                                                   thin = 1,
+                                                   burnin = n.burnin),
+                                MCMCs = "nimble",
+                                monitors = monitors,
+                                metrics = c("mean", "median", "sd", "CI95_low",
+                                            "CI95_upp", "efficiency_coda"))
 
 
 #Rhat to attest convergence (Gelman-Rubin diagnostic)

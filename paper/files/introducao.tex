@@ -1,0 +1,21 @@
+\chapter{Introdução}
+
+Nos anos recentes, estudos de mapeamento de doenças se tornaram aplicação rotineira de epidemiologia geográfica, e tipicamente esses estudos são feitos dentro de uma formulação hierárquica Bayesiana \cite{Ribler2019}. Mapas provêm
+um resumo visual rápido da informação espacial, e permitem encontrar padrões que não
+apareceriam na forma tabular. 
+A alocação de recursos para combate a surtos de doenças deve ter como guia básico mapas de zonas de risco para uma doença, e uma lista de possíveis fatores relevantes para a propagação da doença.
+Neste texto, reviso e aplico métodos comumente sugeridos para a análise de dados de casos de doença agregados por alguma unidade de área no contexto de mapeamento de doenças e regressão espacial, assim como métodos para seleção de variáveis dentro do esquema de regressão. 
+
+Devemos ter cuidado com regressões espaciais por dois motivos: Primeiro, sempre que tratamos de dados agregados podemos cair na possibilidade de falácia ecológica, e isso só pode ser amenizado com a inclusão de dados a nível de indivíduo. Segundo, quando existe dependência espacial no resíduo, termo que defino no corpo do texto, e quando existe estrutura espacial na variável resposta, então as estimativas de parâmetros vão mudar quando comparadas a um cenário de independência, e os dados por si só não podem acomodar todo tipo de forma e extensão de correlação espacial \cite{Wakefield2007}. Para isso,  o uso de modelos hierárquicos permite de forma robusta e flexível introduzir informações de covariáveis para o modelo, acomodar correlação espacial além de prover uma noção formal da incerteza associada às estimativas de risco. Em especial, consegue conciliar esquemas de seleção de variáveis junto com a estimação dos parâmetros de interesse do modelo.
+
+A divisão do texto é a que segue: no Capítulo 2 reviso as duas principais técnicas utilizadas ao longo do texto: modelos
+condicionais autorregressivos (CAR) e seleção bayesiana de variáveis por busca estocástica
+(BSSVS). Modelos CAR são responsáveis por acomodar estrutura espacial dentro do
+modelo, enquanto a seleção de variáveis é feita por um esquema de busca estocástica
+acoplada ao modelo hierárquico. No Capítulo 3, aplico os métodos desenvolvidos para o
+caso de câncer labial na Escócia, comparando diferentes modelos e produzindo mapas de
+risco e quantidades de interesse. No Capítulo 4, aplico os métodos desenvolvidos para a
+epidemia de Ebola na África Ocidental que ocorreu nos anos de 2013-2016. Os dados do
+Ebola foram enriquecidos com informações filogenéticas como variáveis explanatórias. Os
+resultados são utilizados para produzir mapas de risco e realizar a predição de áreas sem
+observações.
